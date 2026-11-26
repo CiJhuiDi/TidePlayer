@@ -125,6 +125,7 @@ TidePlayerView.init = function (self, settings)
 	self._page = 1
 	self._list_mode = "tracks"
 	self._cache_open = false
+	self._pending_switch = false
 	self._lyric_active = {}
 	self._refresh_timer = 0
 	self._built_playlist = nil
@@ -462,8 +463,8 @@ TidePlayerView._build_widgets = function (self)
 			self:_add_button("pl_" .. i, Util.clip(entry.name or "?", 16) .. "  " .. tostring(entry.count or 0), { LAYOUT.list_x + 8, y, 3 }, { LAYOUT.list_w - 56, LAYOUT.list_row_h - 2 }, function ()
 				mod.switch_playlist(entry.url)
 
-				-- 切回频道页，加载完成后 update 检测到歌单变了会再重建
-				self._list_mode = "tracks"
+				-- 停在歌单页等加载，完成后 update 里再切回频道页
+				self._pending_switch = true
 				self:_rebuild()
 			end, STYLES.row, 3)
 
@@ -759,6 +760,25 @@ end
 
 TidePlayerView.update = function (self, dt, t, input_service)
 	self:_update_wave(dt)
+
+	-- 点了歌单：等它加载完（playlist 换新）再自动回频道页
+	if self._pending_switch then
+		local playlist = mod.playlist()
+		local status = mod.status()
+
+		if playlist ~= self._built_playlist and status ~= "loading" then
+			self._pending_switch = false
+			self._list_mode = "tracks"
+			self:_rebuild()
+
+			return TidePlayerView.super.update(self, dt, t, input_service)
+		elseif status == "error" then
+			self._pending_switch = false
+			self:_rebuild()
+
+			return TidePlayerView.super.update(self, dt, t, input_service)
+		end
+	end
 
 	self._refresh_timer = (self._refresh_timer or 0) + (dt or 0)
 
