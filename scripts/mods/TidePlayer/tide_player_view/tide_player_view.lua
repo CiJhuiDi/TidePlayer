@@ -461,6 +461,9 @@ TidePlayerView._build_widgets = function (self)
 
 			self:_add_button("pl_" .. i, Util.clip(entry.name or "?", 16) .. "  " .. tostring(entry.count or 0), { LAYOUT.list_x + 8, y, 3 }, { LAYOUT.list_w - 56, LAYOUT.list_row_h - 2 }, function ()
 				mod.switch_playlist(entry.url)
+
+				-- 切回频道页，加载完成后 update 检测到歌单变了会再重建
+				self._list_mode = "tracks"
 				self:_rebuild()
 			end, STYLES.row, 3)
 
