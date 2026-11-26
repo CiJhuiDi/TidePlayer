@@ -74,8 +74,8 @@ local function scale_style(style)
 	return copy
 end
 
--- 频谱方块：每段 6 个，亮/暗两色
-local WAVE_CELLS = 6
+-- 频谱方块：每段 8 个，亮/暗两色
+local WAVE_CELLS = 8
 local COLOR_WAVE_ON = { 255, 158, 172, 142 }
 local COLOR_WAVE_OFF = { 255, 34, 38, 32 }
 
