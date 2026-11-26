@@ -201,7 +201,7 @@ TidePlayerView._add_text = function (self, name, text, offset, style, size, laye
 	return widget
 end
 
-TidePlayerView._add_button = function (self, name, text, offset, size, on_pressed, text_style, layer)
+TidePlayerView._add_button = function (self, name, text, offset, size, on_pressed, text_style, layer, on_release)
 	local definition = UIWidget.create_definition(button_passes(scale_style(text_style or STYLES.button)), "panel", {
 		text = text,
 	}, scale_size(size), nil, {
@@ -211,13 +211,25 @@ TidePlayerView._add_button = function (self, name, text, offset, size, on_presse
 	local widget = self:_add_widget(UIWidget.init(name, definition))
 	local hotspot = widget.content.hotspot
 
-	hotspot.pressed_callback = function ()
-		local ok, err = pcall(on_pressed)
+	-- 关闭这类会让面板消失的动作放 released_callback：按下时面板还在，事件不会漏到后面
+	if on_release then
+		hotspot.released_callback = function ()
+			local ok, err = pcall(on_release)
 
-		if not ok then
-			mod:error("button '%s' failed: %s", name, tostring(err))
+			if not ok then
+				mod:error("button '%s' failed: %s", name, tostring(err))
+			end
+		end
+	elseif on_pressed then
+		hotspot.pressed_callback = function ()
+			local ok, err = pcall(on_pressed)
+
+			if not ok then
+				mod:error("button '%s' failed: %s", name, tostring(err))
+			end
 		end
 	end
+
 	hotspot.on_pressed_sound = UISoundEvents.default_click
 
 	widget.offset[3] = layer or 3
@@ -281,10 +293,9 @@ TidePlayerView._build_widgets = function (self)
 		self:_rebuild()
 	end, STYLES.button, 3)
 
-	self:_add_button("close", mod:localize("button_close"), { 832, 12, 3 }, { 56, 30 }, function ()
-		-- 推迟一帧再关：否则这一下点击的 release 会漏到面板后面的游戏 UI 上
-		self._close_timer = 0.08
-	end, STYLES.button, 3)
+	self:_add_button("close", mod:localize("button_close"), { 832, 12, 3 }, { 56, 30 }, nil, STYLES.button, 3, function ()
+		mod.close_view()
+	end)
 
 	-- 读数区
 	self:_add_rect("stage_bg", { LAYOUT.stage_x, LAYOUT.stage_y, 1 }, { LAYOUT.stage_w, LAYOUT.stage_h }, COLOR_STAGE, 1)
