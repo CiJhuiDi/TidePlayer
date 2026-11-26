@@ -14,7 +14,19 @@ local WIDTH = 260
 local HEIGHT = 46
 
 local COLOR_TEXT = UIHudSettings.color_tint_main_1
-local COLOR_BACKGROUND = Color.terminal_background_gradient(230, true)
+-- 屏幕中央用纯色底，别用任务目标那条单侧渐变材质
+local COLOR_BACKGROUND = {
+	210,
+	10,
+	12,
+	8,
+}
+local COLOR_LINE = {
+	140,
+	120,
+	128,
+	104,
+}
 
 local function is_visible(content)
 	return content.visible == true
@@ -45,7 +57,7 @@ local widget_definitions = {
 		{
 			style_id = "background",
 			pass_type = "texture",
-			value = "content/ui/materials/hud/backgrounds/terminal_background_weapon",
+			value = "content/ui/materials/backgrounds/default_square",
 			visibility_function = is_visible,
 			style = {
 				vertical_alignment = "top",
@@ -59,6 +71,25 @@ local widget_definitions = {
 					0,
 				},
 				color = table.clone(COLOR_BACKGROUND),
+			},
+		},
+		{
+			style_id = "line",
+			pass_type = "texture",
+			value = "content/ui/materials/backgrounds/default_square",
+			visibility_function = is_visible,
+			style = {
+				vertical_alignment = "top",
+				size = {
+					WIDTH,
+					1,
+				},
+				offset = {
+					0,
+					0,
+					1,
+				},
+				color = table.clone(COLOR_LINE),
 			},
 		},
 	}, "hud", {
