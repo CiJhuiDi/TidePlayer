@@ -8,6 +8,7 @@ local Util = mod:io_dofile("TidePlayer/scripts/mods/TidePlayer/TidePlayer_util")
 local Definitions = mod:io_dofile("TidePlayer/scripts/mods/TidePlayer/tide_player_view/tide_player_view_definitions")
 local UIWidget = mod:original_require("scripts/managers/ui/ui_widget")
 local UISoundEvents = mod:original_require("scripts/settings/ui/ui_sound_events")
+local UIWorkspaceSettings = mod:original_require("scripts/settings/ui/ui_workspace_settings")
 
 local LAYOUT = Definitions.layout
 local STYLES = Definitions.styles
@@ -139,16 +140,15 @@ TidePlayerView.init = function (self, settings)
 end
 
 TidePlayerView.on_enter = function (self)
-	local resolution = rawget(_G, "RESOLUTION_LOOKUP")
+	-- 用 workspace 的 screen 逻辑尺寸（1920×1080）居中；RESOLUTION_LOOKUP 不是全局，取不到
+	local screen = UIWorkspaceSettings.screen
+	local screen_width = screen and screen.size and screen.size[1] or 1920
+	local screen_height = screen and screen.size and screen.size[2] or 1080
+	local width = scale_number(LAYOUT.panel_width)
+	local height = scale_number(LAYOUT.panel_height)
 
-	if resolution then
-		local scale = resolution.scale or 1
-		local width = scale_number(LAYOUT.panel_width)
-		local height = scale_number(LAYOUT.panel_height)
-
-		PANEL_ORIGIN.x = math.floor((resolution.width / scale - width) / 2)
-		PANEL_ORIGIN.y = math.floor((resolution.height / scale - height) / 2)
-	end
+	PANEL_ORIGIN.x = math.floor((screen_width - width) / 2)
+	PANEL_ORIGIN.y = math.floor((screen_height - height) / 2)
 
 	self:_build_widgets()
 
