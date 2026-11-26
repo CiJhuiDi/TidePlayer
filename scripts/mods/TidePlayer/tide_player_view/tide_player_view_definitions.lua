@@ -23,6 +23,8 @@ local SCREEN_HEIGHT = 1080
 
 local scenegraph_definition = {
 	screen = UIWorkspaceSettings.screen,
+	-- 节点原点留在屏幕左上；居中由 view 里的 PANEL_ORIGIN 加在 widget 坐标上
+	-- （节点 position 会被 scenegraph 重复叠加，之前挪到右下角就是这么来的）
 	panel = {
 		parent = "screen",
 		vertical_alignment = "center",
@@ -32,8 +34,8 @@ local scenegraph_definition = {
 			SCALED_HEIGHT,
 		},
 		position = {
-			math.floor((SCREEN_WIDTH - SCALED_WIDTH) / 2),
-			math.floor((SCREEN_HEIGHT - SCALED_HEIGHT) / 2),
+			0,
+			0,
 			10,
 		},
 	},

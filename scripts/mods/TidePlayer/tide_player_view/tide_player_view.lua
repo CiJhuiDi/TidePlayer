@@ -32,14 +32,20 @@ local COLOR_TRACK_FILL = { 255, 148, 164, 128 }
 -- 面板按 900×540 的设计稿写坐标，这里统一放大，字号也跟着乘
 local UI_SCALE = LAYOUT.scale or 1.2
 
+-- 面板在屏幕上的左上角（on_enter 时按实际分辨率算），所有 widget 坐标加这个偏移
+local PANEL_ORIGIN = {
+	x = 0,
+	y = 0,
+}
+
 local function scale_number(value)
 	return math.floor((value or 0) * UI_SCALE + 0.5)
 end
 
 local function scale_offset(offset)
 	return {
-		scale_number(offset[1]),
-		scale_number(offset[2]),
+		PANEL_ORIGIN.x + scale_number(offset[1]),
+		PANEL_ORIGIN.y + scale_number(offset[2]),
 		offset[3] or 0,
 	}
 end
@@ -133,6 +139,17 @@ TidePlayerView.init = function (self, settings)
 end
 
 TidePlayerView.on_enter = function (self)
+	local resolution = rawget(_G, "RESOLUTION_LOOKUP")
+
+	if resolution then
+		local scale = resolution.scale or 1
+		local width = scale_number(LAYOUT.panel_width)
+		local height = scale_number(LAYOUT.panel_height)
+
+		PANEL_ORIGIN.x = math.floor((resolution.width / scale - width) / 2)
+		PANEL_ORIGIN.y = math.floor((resolution.height / scale - height) / 2)
+	end
+
 	self:_build_widgets()
 
 	TidePlayerView.super.on_enter(self)
