@@ -687,8 +687,16 @@ mod.adjust_volume = function(delta)
 
 	_volume_toast_until = now() + 1.5
 
-	-- 大厅/菜单里 HUD 不跑，聊天栏再兜一句
-	if mod.echo then
+	-- 大厅/菜单里 HUD 不跑；聊天栏这条只在开发者模式里出现，别刷玩家的屏
+	local developer_mode = false
+
+	if type(mod.is_developer_mode) == "function" then
+		developer_mode = mod:is_developer_mode()
+	elseif type(mod.get) == "function" then
+		developer_mode = mod:get("developer_mode") == true
+	end
+
+	if developer_mode and mod.echo then
 		mod:echo(string.format("VOL %d", mod.volume()))
 	end
 end
