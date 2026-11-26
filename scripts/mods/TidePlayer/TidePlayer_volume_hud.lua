@@ -14,7 +14,8 @@ local WIDTH = 260
 local HEIGHT = 46
 
 local COLOR_TEXT = UIHudSettings.color_tint_main_1
-local COLOR_BACKGROUND = Color.terminal_background_gradient(230, true)
+-- 弹窗/面板用的可拉伸底，左右两边都是完整的
+local COLOR_BACKGROUND = Color.terminal_grid_background(235, true)
 
 local function is_visible(content)
 	return content.visible == true
@@ -45,7 +46,7 @@ local widget_definitions = {
 		{
 			style_id = "background",
 			pass_type = "texture",
-			value = "content/ui/materials/hud/backgrounds/terminal_background_team_panels",
+			value = "content/ui/materials/backgrounds/terminal_basic",
 			visibility_function = is_visible,
 			style = {
 				vertical_alignment = "top",
