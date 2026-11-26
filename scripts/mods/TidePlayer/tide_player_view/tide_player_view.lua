@@ -29,6 +29,50 @@ local COLOR_CURSOR = { 255, 158, 172, 142 }
 local COLOR_TRACK_BG = { 255, 24, 30, 22 }
 local COLOR_TRACK_FILL = { 255, 148, 164, 128 }
 
+-- 面板按 900×540 的设计稿写坐标，这里统一放大，字号也跟着乘
+local UI_SCALE = 1.2
+
+local function scale_number(value)
+	return math.floor((value or 0) * UI_SCALE + 0.5)
+end
+
+local function scale_offset(offset)
+	return {
+		scale_number(offset[1]),
+		scale_number(offset[2]),
+		offset[3] or 0,
+	}
+end
+
+local function scale_size(size)
+	if not size then
+		return nil
+	end
+
+	return {
+		scale_number(size[1]),
+		scale_number(size[2]),
+	}
+end
+
+local function scale_style(style)
+	local copy = table.clone(style)
+
+	if copy.font_size then
+		copy.font_size = scale_number(copy.font_size)
+	end
+
+	if copy.offset then
+		copy.offset = scale_offset(copy.offset)
+	end
+
+	if copy.size then
+		copy.size = scale_size(copy.size)
+	end
+
+	return copy
+end
+
 -- 频谱方块：每段 6 个，亮/暗两色
 local WAVE_CELLS = 6
 local COLOR_WAVE_ON = { 255, 158, 172, 142 }
@@ -104,6 +148,9 @@ TidePlayerView._add_widget = function (self, widget)
 end
 
 TidePlayerView._add_rect = function (self, name, offset, size, color, layer)
+	local scaled_offset = scale_offset(offset)
+	local scaled_size = scale_size(size)
+
 	local definition = UIWidget.create_definition({
 		{
 			style_id = "rect",
@@ -115,11 +162,11 @@ TidePlayerView._add_rect = function (self, name, offset, size, color, layer)
 					0,
 					0,
 				},
-				size = size,
+				size = scaled_size,
 			},
 		},
-	}, "panel", nil, size, nil, {
-		offset = offset,
+	}, "panel", nil, scaled_size, nil, {
+		offset = scaled_offset,
 	})
 
 	local widget = self:_add_widget(UIWidget.init(name, definition))
@@ -135,12 +182,12 @@ TidePlayerView._add_text = function (self, name, text, offset, style, size, laye
 			style_id = "text",
 			pass_type = "text",
 			value_id = "text",
-			style = style,
+			style = scale_style(style),
 		},
 	}, "panel", {
 		text = text or "",
-	}, size, nil, {
-		offset = offset,
+	}, scale_size(size), nil, {
+		offset = scale_offset(offset),
 	})
 
 	local widget = self:_add_widget(UIWidget.init(name, definition))
@@ -151,10 +198,10 @@ TidePlayerView._add_text = function (self, name, text, offset, style, size, laye
 end
 
 TidePlayerView._add_button = function (self, name, text, offset, size, on_pressed, text_style, layer)
-	local definition = UIWidget.create_definition(button_passes(text_style or STYLES.button), "panel", {
+	local definition = UIWidget.create_definition(button_passes(scale_style(text_style or STYLES.button)), "panel", {
 		text = text,
-	}, size, nil, {
-		offset = offset,
+	}, scale_size(size), nil, {
+		offset = scale_offset(offset),
 	})
 
 	local widget = self:_add_widget(UIWidget.init(name, definition))
@@ -315,17 +362,17 @@ TidePlayerView._build_widgets = function (self)
 				LAYOUT.list_y + LAYOUT.list_row_y + (i - first) * LAYOUT.list_row_h,
 				2,
 			}
-			local row_num_style = table.clone(STYLES.row_num)
-			row_num_style.offset = { 12, 0, 0 }
-			row_num_style.size = { 24, LAYOUT.list_row_h }
+			local row_num_style = scale_style(table.clone(STYLES.row_num))
+			row_num_style.offset = scale_offset({ 12, 0, 0 })
+			row_num_style.size = scale_size({ 24, LAYOUT.list_row_h })
 
-			local row_freq_style = table.clone(STYLES.row_freq)
-			row_freq_style.offset = { 40, 0, 0 }
-			row_freq_style.size = { 44, LAYOUT.list_row_h }
+			local row_freq_style = scale_style(table.clone(STYLES.row_freq))
+			row_freq_style.offset = scale_offset({ 40, 0, 0 })
+			row_freq_style.size = scale_size({ 44, LAYOUT.list_row_h })
 
-			local row_name_style = table.clone(active and STYLES.row_active or STYLES.row)
-			row_name_style.offset = { 92, 0, 0 }
-			row_name_style.size = { LAYOUT.list_w - 104, LAYOUT.list_row_h }
+			local row_name_style = scale_style(table.clone(active and STYLES.row_active or STYLES.row))
+			row_name_style.offset = scale_offset({ 92, 0, 0 })
+			row_name_style.size = scale_size({ LAYOUT.list_w - 104, LAYOUT.list_row_h })
 
 			local definition = UIWidget.create_definition({
 				{
@@ -360,11 +407,11 @@ TidePlayerView._build_widgets = function (self)
 				num = string.format("%02d", i),
 				freq = string.format("%.1f", 87 + ((i - 1) * 1.37) % 21),
 				name = Util.clip(song.name or "?", 26),
-			}, {
+			}, scale_size({
 				LAYOUT.list_w,
 				LAYOUT.list_row_h,
-			}, nil, {
-				offset = offset,
+			}), nil, {
+				offset = scale_offset(offset),
 			})
 
 			local widget = self:_add_widget(UIWidget.init("row_" .. i, definition))
