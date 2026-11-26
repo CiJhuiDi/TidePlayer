@@ -1,0 +1,12 @@
+{
+  "name": "Tide Player",
+  "description": "Paste a NetEase Cloud Music playlist or album link and play it in game. Bundles its own minimp3 + waveOut audio backend, no extra plugin needed.",
+  "version": "0.2.0",
+  "author": "CJDYZ",
+  "localization": {
+    "zh-cn": {
+      "name": "暗潮点歌台",
+      "description": "粘贴网易云歌单或专辑链接就能在游戏里点歌。自带 minimp3 + waveOut 音频后端，不需要额外插件。"
+    }
+  }
+}

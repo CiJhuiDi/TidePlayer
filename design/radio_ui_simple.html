@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>可实现版：暗潮 UI 能力内的收音机面板</title>
+<style>
+  /* 只用游戏 UI 真正有的东西：纯色矩形、游戏材质（这里用纯色+1px 线近似）、文字。
+     没有圆角、没有渐变、没有阴影、没有发光、没有旋转。 */
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:#070806;
+    font-family:"Bahnschrift","Arial Narrow","Segoe UI",sans-serif;
+    color:#cfc4a6;
+    display:flex;align-items:center;justify-content:center;
+    min-height:100vh;
+  }
+  .panel{
+    width:900px;
+    background:#0d0e0a;
+    border:1px solid #3a3420;
+    padding:14px;
+  }
+  .top{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding-bottom:10px;
+    border-bottom:1px solid #2a2719;
+    letter-spacing:.22em;
+    font-size:14px;
+    color:#c9a15a;
+  }
+  .top .right{font-family:Consolas,monospace;font-size:11px;color:#7a6c46;letter-spacing:.12em}
+
+  .body{display:flex;gap:14px;padding-top:14px;height:430px}
+
+  /* 左：读数区 */
+  .stage{
+    flex:1;
+    background:#080b08;
+    border:1px solid #232d1e;
+    padding:18px 20px;
+    display:flex;flex-direction:column;
+  }
+  .freq{
+    font-family:Consolas,monospace;
+    font-size:13px;
+    letter-spacing:.3em;
+    color:#7f9b77;
+  }
+  .freq b{font-size:42px;letter-spacing:.06em;color:#ffb84d;font-weight:400}
+
+  /* 刻度尺：24 根 1px 竖条 + 一个游标，全部是一条条 rect 拼的 */
+  .ruler{display:flex;gap:6px;align-items:flex-end;height:22px;margin:16px 0 6px}
+  .ruler i{display:block;width:1px;height:8px;background:#4a4226}
+  .ruler i.tall{height:16px;background:#8a7440}
+  .ruler .cursor{width:3px;height:22px;background:#ffb84d;margin-left:2px}
+
+  .song{font-size:30px;line-height:1.15;color:#ffb84d;letter-spacing:.04em;text-transform:uppercase;margin-top:20px}
+  .artist{font-size:17px;color:#9ab48f;letter-spacing:.08em;margin-top:8px}
+
+  .foot{margin-top:auto}
+  .time{font-family:Consolas,monospace;font-size:12px;color:#7f9b77;letter-spacing:.1em;display:flex;justify-content:space-between;margin-bottom:6px}
+  .track{height:6px;background:#122016;border:1px solid #1d2c22;position:relative}
+  .track i{position:absolute;left:0;top:0;bottom:0;width:27%;background:#8a5f1f;border-right:2px solid #ffb84d}
+
+  /* 右：频道列表 */
+  .list{
+    width:320px;
+    border:1px solid #2b2819;
+    background:#101109;
+    display:flex;flex-direction:column;
+  }
+  .list .head{
+    font-family:Consolas,monospace;font-size:10px;letter-spacing:.26em;color:#6e6345;
+    padding:9px 12px;border-bottom:1px solid #262313;
+    display:flex;justify-content:space-between;
+  }
+  .list .rows{padding:4px 0}
+  .row{
+    display:grid;grid-template-columns:26px 44px 1fr;
+    gap:8px;align-items:center;
+    padding:8px 12px 8px 10px;
+    border-left:2px solid transparent;
+    font-size:13px;letter-spacing:.04em;color:#9c9a7e;
+  }
+  .row .n,.row .f{font-family:Consolas,monospace;font-size:10px;color:#6a5f3e}
+  .row.on{border-left-color:#c9a15a;color:#e8c98d;background:#171810}
+  .row.on .n,.row.on .f{color:#a97a33}
+
+  /* 底：控制 */
+  .controls{
+    display:flex;align-items:center;gap:10px;
+    padding-top:12px;border-top:1px solid #2a2719;margin-top:14px;
+  }
+  .btn{
+    height:40px;padding:0 18px;
+    border:1px solid #3b3520;
+    background:#191a12;
+    color:#c9a15a;
+    font-family:inherit;font-size:15px;letter-spacing:.1em;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .btn.primary{color:#ffb84d;border-color:#5a4a28}
+  .btn.wide{min-width:88px}
+  .gap{flex:1}
+  .vol{font-family:Consolas,monospace;font-size:11px;letter-spacing:.16em;color:#7f7250}
+</style>
+</head>
+<body>
+  <div class="panel">
+    <div class="top">
+      <span>VOX-CASTER 77 · TIDEPLAYER</span>
+      <span class="right">FM · STEREO · CH 01</span>
+    </div>
+
+    <div class="body">
+      <div class="stage">
+        <div class="freq">TUNED <b>92.7</b> MHz</div>
+
+        <!-- 刻度尺：24 根竖条，后面 JS 塞进去 -->
+        <div class="ruler" id="ruler"></div>
+
+        <div class="song">DEAR HEARTS AND GENTLE PEOPLE</div>
+        <div class="artist">BOB CROSBY</div>
+
+        <div class="foot">
+          <div class="time"><span>0:36</span><span>2:13</span></div>
+          <div class="track"><i></i></div>
+        </div>
+      </div>
+
+      <div class="list">
+        <div class="head"><span>PRESET CHANNELS</span><span>01 / 08</span></div>
+        <div class="rows">
+          <div class="row on"><span class="n">01</span><span class="f">88.1</span><span>DEAR HEARTS AND GENTLE PEOPLE</span></div>
+          <div class="row"><span class="n">02</span><span class="f">89.5</span><span>I DON'T WANT TO SET THE WORLD ON FIRE</span></div>
+          <div class="row"><span class="n">03</span><span class="f">91.2</span><span>A WONDERFUL GUY</span></div>
+          <div class="row"><span class="n">04</span><span class="f">93.0</span><span>ATOM BOMB BABY</span></div>
+          <div class="row"><span class="n">05</span><span class="f">94.6</span><span>BUTCHER PETE, PART 1</span></div>
+          <div class="row"><span class="n">06</span><span class="f">96.1</span><span>CIVILIZATION (BONGO, BONGO, BONGO)</span></div>
+          <div class="row"><span class="n">07</span><span class="f">99.4</span><span>CRAWL OUT THROUGH THE FALLOUT</span></div>
+          <div class="row"><span class="n">08</span><span class="f">102.7</span><span>ANYTHING GOES</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="btn">PREV</div>
+      <div class="btn primary">PLAY</div>
+      <div class="btn">NEXT</div>
+      <div class="btn">STOP</div>
+      <div class="gap"></div>
+      <div class="btn wide">VOL -</div>
+      <div class="btn wide">VOL +</div>
+      <div class="btn wide">LOOP</div>
+      <div class="vol">70</div>
+    </div>
+  </div>
+
+<script>
+  // 刻度尺：24 根竖条，每 6 根一根高的；游标落在 27% 对应的刻度上
+  const ruler = document.getElementById("ruler");
+  const cursorAt = Math.round(0.27 * 23);
+  for (let i = 0; i < 24; i++) {
+    const el = document.createElement("i");
+    if (i % 6 === 0) el.className = "tall";
+    ruler.appendChild(el);
+    if (i === cursorAt) {
+      const cursor = document.createElement("span");
+      cursor.className = "cursor";
+      ruler.appendChild(cursor);
+    }
+  }
+</script>
+</body>
+</html>
