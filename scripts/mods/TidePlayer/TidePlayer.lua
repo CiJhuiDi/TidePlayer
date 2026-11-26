@@ -23,6 +23,7 @@ local MIN_MP3_BYTES = 100 * 1024
 
 local _playlist = nil
 local _index = 0 -- 0 = 还没选歌
+local _current_song = nil -- 正在播放的那首；切歌单后仍然保留，标题不会空
 local _status = "idle" -- idle / loading / playing / paused / error
 local _error = nil
 local _volume = 70
@@ -213,6 +214,10 @@ end
 -- ############################## 播放 ##############################
 
 local function current_song()
+	if _current_song then
+		return _current_song
+	end
+
 	if not _playlist or _index < 1 then
 		return nil
 	end
@@ -258,6 +263,7 @@ local function play_local_file(index, path, tried)
 
 	_index = index
 	_pending_index = nil
+	_current_song = song
 
 	set_status("playing")
 	_last_mode = "playing"
@@ -589,8 +595,21 @@ mod.load_playlist = function(text, silent)
 		end
 
 		_playlist = playlist
-		_index = 0
 		_pending_index = nil
+
+		-- 切歌单时保留正在播的那首：新歌单里有同一 id 就跟过去，没有就停在 0，
+		-- _current_song 还在，所以标题不会空
+		_index = 0
+
+		if _current_song then
+			for i = 1, #playlist.tracks do
+				if playlist.tracks[i].id == _current_song.id then
+					_index = i
+
+					break
+				end
+			end
+		end
 
 		if _status == "loading" then
 			set_status("idle")
@@ -670,6 +689,7 @@ end
 mod.stop = function()
 	Audio.stop()
 	_pending_index = nil
+	_current_song = nil
 	end_duck()
 	set_status("idle")
 	_last_mode = nil
