@@ -259,8 +259,9 @@ local WAVE_CELL_W = 4
 local WAVE_CELL_H = 3
 local WAVE_CELL_STEP = 5
 
+-- 未点亮的方块完全透明（不用 content.visible，那个会被整体显隐覆盖）
 local COLOR_WAVE_OFF = {
-	255,
+	0,
 	40,
 	44,
 	36,
