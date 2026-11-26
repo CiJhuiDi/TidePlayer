@@ -126,7 +126,6 @@ TidePlayerView.init = function (self, settings)
 	self._list_mode = "tracks"
 	self._cache_open = false
 	self._pending_switch = false
-	self._close_timer = nil
 	self._lyric_active = {}
 	self._refresh_timer = 0
 	self._built_playlist = nil
@@ -773,15 +772,6 @@ end
 
 TidePlayerView.update = function (self, dt, t, input_service)
 	self:_update_wave(dt)
-
-	if self._close_timer then
-		self._close_timer = self._close_timer - (dt or 0)
-
-		if self._close_timer <= 0 then
-			self._close_timer = nil
-			mod.close_view()
-		end
-	end
 
 	-- 点了歌单：等它加载完（playlist 换新）再自动回频道页
 	if self._pending_switch then
