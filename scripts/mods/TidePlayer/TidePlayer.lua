@@ -686,6 +686,11 @@ mod.adjust_volume = function(delta)
 	mod.set_volume(_volume + delta)
 
 	_volume_toast_until = now() + 1.5
+
+	-- 大厅/菜单里 HUD 不跑，聊天栏再兜一句
+	if mod.echo then
+		mod:echo(string.format("VOL %d", mod.volume()))
+	end
 end
 
 -- 快捷键调音量后，迷你 HUD 会临时亮 1.5 秒显示当前音量
@@ -795,6 +800,13 @@ mod.on_all_mods_loaded = function()
 		mod:register_hud_element({
 			class_name = "TidePlayerHud",
 			filename = "TidePlayer/scripts/mods/TidePlayer/TidePlayer_hud",
+			visibility_groups = { "alive", "dead" },
+			use_hud_scale = false,
+		})
+
+		mod:register_hud_element({
+			class_name = "TidePlayerVolumeHud",
+			filename = "TidePlayer/scripts/mods/TidePlayer/TidePlayer_volume_hud",
 			visibility_groups = { "alive", "dead" },
 			use_hud_scale = false,
 		})
