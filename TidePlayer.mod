@@ -1,4 +1,4 @@
-return {
+﻿return {
 	run = function()
 		fassert(rawget(_G, "new_mod"), "`TidePlayer` encountered an error loading the Darktide Mod Framework.")
 
@@ -9,6 +9,7 @@ return {
 		})
 	end,
 	packages = {},
-	version = "0.2.0",
+	version = "0.3.0",
 	author = "CJDYZ",
 }
+

@@ -1,7 +1,7 @@
-{
+﻿{
   "name": "Tide Player",
   "description": "Paste a NetEase Cloud Music playlist or album link and play it in game. Bundles its own minimp3 + waveOut audio backend, no extra plugin needed.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "CJDYZ",
   "localization": {
     "zh-cn": {
