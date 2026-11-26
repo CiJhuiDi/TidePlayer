@@ -25,7 +25,8 @@ local scenegraph_definition = {
 	hud = {
 		parent = "screen",
 		scale = "fit",
-		vertical_alignment = "top",
+		-- 放在屏幕底部中央，比体力条再低一截
+		vertical_alignment = "bottom",
 		horizontal_alignment = "center",
 		size = {
 			WIDTH,
@@ -33,7 +34,7 @@ local scenegraph_definition = {
 		},
 		position = {
 			0,
-			96,
+			110,
 			100,
 		},
 	},
