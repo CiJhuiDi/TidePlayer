@@ -523,7 +523,7 @@ TidePlayerHud.update = function (self, dt, t, ui_renderer, render_settings, inpu
 						local cell = cells[j]
 
 						if cell then
-							cell.style.rect.color = table.clone(j <= lit and COLOR_WAVE_ON or COLOR_WAVE_OFF)
+							cell.style.rect.color = table.clone(j <= lit and COLOR_BAR or COLOR_WAVE_OFF)
 							cell.dirty = true
 						end
 					end
