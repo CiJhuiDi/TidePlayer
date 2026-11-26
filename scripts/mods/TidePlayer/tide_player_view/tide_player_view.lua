@@ -29,6 +29,11 @@ local COLOR_CURSOR = { 255, 158, 172, 142 }
 local COLOR_TRACK_BG = { 255, 24, 30, 22 }
 local COLOR_TRACK_FILL = { 255, 148, 164, 128 }
 
+-- 频谱方块：每段 6 个，亮/暗两色
+local WAVE_CELLS = 6
+local COLOR_WAVE_ON = { 255, 158, 172, 142 }
+local COLOR_WAVE_OFF = { 255, 34, 38, 32 }
+
 local TidePlayerView = class("TidePlayerView", "BaseView")
 
 -- ############################## 构件 ##############################
@@ -233,24 +238,29 @@ TidePlayerView._build_widgets = function (self)
 	self:_add_rect("stage_bg", { LAYOUT.stage_x, LAYOUT.stage_y, 1 }, { LAYOUT.stage_w, LAYOUT.stage_h }, COLOR_STAGE, 1)
 	self:_add_rect("stage_top_line", { LAYOUT.stage_x, LAYOUT.stage_y, 2 }, { LAYOUT.stage_w, 1 }, COLOR_LINE, 2)
 
-	-- 波形条：24 根竖条，底部对齐基线，只向上伸缩
+	-- 频谱：24 段，每段 6 个小方块，点到哪块亮到哪块（LED 柱）
 	local ruler_x = LAYOUT.stage_x + 20
 	local baseline = LAYOUT.wave_y
 
-	self._wave_widgets = {}
-	self._wave = {}
+	self._wave_cells = {}
+	self._wave_lit = {}
 	self._wave_timer = 0
 
 	for i = 1, LAYOUT.ruler_count do
-		local widget = self:_add_rect(
-			"wave_" .. i,
-			{ ruler_x + (i - 1) * LAYOUT.ruler_step, baseline - 2, 2 },
-			{ 3, 2 },
-			COLOR_CURSOR,
-			2
-		)
+		local cells = {}
 
-		self._wave_widgets[i] = widget
+		for j = 1, WAVE_CELLS do
+			cells[j] = self:_add_rect(
+				"wave_" .. i .. "_" .. j,
+				{ ruler_x + (i - 1) * LAYOUT.ruler_step + 7, baseline - j * 7, 2 },
+				{ 6, 5 },
+				COLOR_WAVE_OFF,
+				2
+			)
+		end
+
+		self._wave_cells[i] = cells
+		self._wave_lit[i] = 0
 	end
 
 	-- 歌名 / 歌手
@@ -654,9 +664,9 @@ end
 
 -- ############################## update ##############################
 
--- 频谱：每 50ms 取一次 24 个频段的能量，直接决定每根条的高度
+-- 频谱：每 40ms 取一次 24 个频段的能量，点亮对应数量的方块
 TidePlayerView._update_wave = function (self, dt)
-	if not self._wave_widgets then
+	if not self._wave_cells then
 		return
 	end
 
@@ -674,19 +684,23 @@ TidePlayerView._update_wave = function (self, dt)
 		return
 	end
 
-	local baseline = LAYOUT.wave_y
-
 	for i = 1, LAYOUT.ruler_count do
-		local widget = self._wave_widgets[i]
+		local value = tonumber(spectrum[i - 1]) or 0
+		local lit = math.floor(value / 1000 * WAVE_CELLS)
 
-		if widget then
-			local value = tonumber(spectrum[i - 1]) or 0
-			local height = 2 + math.floor(value * 0.042)
+		if self._wave_lit[i] ~= lit then
+			self._wave_lit[i] = lit
 
-			-- 底部固定，向上长
-			widget.offset[2] = baseline - height
-			widget.style.rect.size[2] = height
-			widget.dirty = true
+			local cells = self._wave_cells[i]
+
+			for j = 1, WAVE_CELLS do
+				local cell = cells[j]
+
+				if cell then
+					cell.style.rect.color = table.clone(j <= lit and COLOR_WAVE_ON or COLOR_WAVE_OFF)
+					cell.dirty = true
+				end
+			end
 		end
 	end
 end
