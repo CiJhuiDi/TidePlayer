@@ -126,6 +126,7 @@ TidePlayerView.init = function (self, settings)
 	self._list_mode = "tracks"
 	self._cache_open = false
 	self._pending_switch = false
+	self._close_timer = nil
 	self._lyric_active = {}
 	self._refresh_timer = 0
 	self._built_playlist = nil
@@ -281,7 +282,8 @@ TidePlayerView._build_widgets = function (self)
 	end, STYLES.button, 3)
 
 	self:_add_button("close", mod:localize("button_close"), { 832, 12, 3 }, { 56, 30 }, function ()
-		mod.close_view()
+		-- 推迟一帧再关：否则这一下点击的 release 会漏到面板后面的游戏 UI 上
+		self._close_timer = 0.08
 	end, STYLES.button, 3)
 
 	-- 读数区
@@ -760,6 +762,15 @@ end
 
 TidePlayerView.update = function (self, dt, t, input_service)
 	self:_update_wave(dt)
+
+	if self._close_timer then
+		self._close_timer = self._close_timer - (dt or 0)
+
+		if self._close_timer <= 0 then
+			self._close_timer = nil
+			mod.close_view()
+		end
+	end
 
 	-- 点了歌单：等它加载完（playlist 换新）再自动回频道页
 	if self._pending_switch then
