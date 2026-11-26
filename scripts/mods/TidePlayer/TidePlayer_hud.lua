@@ -249,41 +249,53 @@ local widget_definitions = {
 	}),
 }
 
--- 频谱条：替代进度条，24 个频段，从文字列开始，底部对齐向上长
+-- 频谱：替代进度条，24 段 × 6 个小方块（LED 柱）
 local WAVE_COUNT = 24
 local WAVE_X = 52
 local WAVE_STEP = 16
-local WAVE_BAR_W = 4
 local WAVE_BASE = 56
+local WAVE_CELLS = 6
+local WAVE_CELL_W = 4
+local WAVE_CELL_H = 3
+local WAVE_CELL_STEP = 5
+
+local COLOR_WAVE_OFF = {
+	255,
+	40,
+	44,
+	36,
+}
 
 for i = 1, WAVE_COUNT do
-	widget_definitions["wave_" .. i] = UIWidget.create_definition({
-		{
-			style_id = "rect",
-			pass_type = "rect",
-			visibility_function = is_visible,
-			style = {
-				color = table.clone(COLOR_BAR),
-				offset = {
-					0,
-					0,
-					0,
-				},
-				size = {
-					WAVE_BAR_W,
-					2,
+	for j = 1, WAVE_CELLS do
+		widget_definitions["wave_" .. i .. "_" .. j] = UIWidget.create_definition({
+			{
+				style_id = "rect",
+				pass_type = "rect",
+				visibility_function = is_visible,
+				style = {
+					color = table.clone(COLOR_WAVE_OFF),
+					offset = {
+						0,
+						0,
+						0,
+					},
+					size = {
+						WAVE_CELL_W,
+						WAVE_CELL_H,
+					},
 				},
 			},
-		},
-	}, "hud", {
-		visible = false,
-	}, nil, nil, {
-		offset = {
-			WAVE_X + (i - 1) * WAVE_STEP,
-			WAVE_BASE - 2,
-			6,
-		},
-	})
+		}, "hud", {
+			visible = false,
+		}, nil, nil, {
+			offset = {
+				WAVE_X + (i - 1) * WAVE_STEP + 6,
+				WAVE_BASE - j * WAVE_CELL_STEP,
+				6,
+			},
+		})
+	end
 end
 
 local TidePlayerHud = class("TidePlayerHud", "HudElementBase")
@@ -350,11 +362,19 @@ TidePlayerHud.init = function (self, parent, draw_layer, start_scale)
 	self._title_scroll = 0
 	self._title_tick = 0
 
-	self._wave_widgets = {}
+	self._wave_cells = {}
+	self._wave_lit = {}
 	self._wave_timer = 0
 
 	for i = 1, WAVE_COUNT do
-		self._wave_widgets[i] = self._widgets_by_name["wave_" .. i]
+		local cells = {}
+
+		for j = 1, WAVE_CELLS do
+			cells[j] = self._widgets_by_name["wave_" .. i .. "_" .. j]
+		end
+
+		self._wave_cells[i] = cells
+		self._wave_lit[i] = 0
 	end
 end
 
@@ -472,7 +492,7 @@ TidePlayerHud.update = function (self, dt, t, ui_renderer, render_settings, inpu
 		mask.dirty = true
 	end
 
-	-- 频谱：每 40ms 取一次 24 个频段，底部对齐向上长
+	-- 频谱：每 40ms 取一次 24 个频段，点亮对应数量的方块
 	self._wave_timer = (self._wave_timer or 0) + (dt or 0)
 
 	if self._wave_timer >= 0.04 then
@@ -482,15 +502,22 @@ TidePlayerHud.update = function (self, dt, t, ui_renderer, render_settings, inpu
 
 		if spectrum then
 			for i = 1, WAVE_COUNT do
-				local widget = self._wave_widgets[i]
+				local value = tonumber(spectrum[i - 1]) or 0
+				local lit = math.floor(value / 1000 * WAVE_CELLS)
 
-				if widget then
-					local value = tonumber(spectrum[i - 1]) or 0
-					local height = 2 + math.floor(value * 0.026)
+				if self._wave_lit[i] ~= lit then
+					self._wave_lit[i] = lit
 
-					widget.offset[2] = WAVE_BASE - height
-					widget.style.rect.size[2] = height
-					widget.dirty = true
+					local cells = self._wave_cells[i]
+
+					for j = 1, WAVE_CELLS do
+						local cell = cells[j]
+
+						if cell then
+							cell.style.rect.color = table.clone(j <= lit and COLOR_BAR or COLOR_WAVE_OFF)
+							cell.dirty = true
+						end
+					end
 				end
 			end
 		end
