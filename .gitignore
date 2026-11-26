@@ -1,4 +1,5 @@
 ﻿cache/
+dist/
 tide_audio_new.dll
 tide_audio_prev.dll
 *.tmp
