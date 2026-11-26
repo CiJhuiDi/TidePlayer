@@ -45,7 +45,7 @@ local widget_definitions = {
 		{
 			style_id = "background",
 			pass_type = "texture",
-			value = "content/ui/materials/hud/backgrounds/terminal_background_weapon",
+			value = "content/ui/materials/hud/backgrounds/terminal_background_team_panels",
 			visibility_function = is_visible,
 			style = {
 				vertical_alignment = "top",
