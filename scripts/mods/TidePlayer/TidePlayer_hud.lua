@@ -266,6 +266,14 @@ local COLOR_WAVE_OFF = {
 	36,
 }
 
+-- 迷你 HUD 的频谱用白色块，和面板的灰绿区分开
+local COLOR_WAVE_ON = {
+	255,
+	255,
+	255,
+	255,
+}
+
 for i = 1, WAVE_COUNT do
 	for j = 1, WAVE_CELLS do
 		widget_definitions["wave_" .. i .. "_" .. j] = UIWidget.create_definition({
@@ -514,7 +522,7 @@ TidePlayerHud.update = function (self, dt, t, ui_renderer, render_settings, inpu
 						local cell = cells[j]
 
 						if cell then
-							cell.style.rect.color = table.clone(j <= lit and COLOR_BAR or COLOR_WAVE_OFF)
+							cell.style.rect.color = table.clone(j <= lit and COLOR_WAVE_ON or COLOR_WAVE_OFF)
 							cell.dirty = true
 						end
 					end
