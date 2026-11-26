@@ -219,14 +219,14 @@ local widget_definitions = {
 			visibility_function = is_visible,
 			style = {
 				horizontal_alignment = "left",
-				vertical_alignment = "top",
+				vertical_alignment = "center",
 				size = {
 					32,
 					32,
 				},
 				offset = {
 					10,
-					3,
+					0,
 					6,
 				},
 				color = COLOR_TEXT,
