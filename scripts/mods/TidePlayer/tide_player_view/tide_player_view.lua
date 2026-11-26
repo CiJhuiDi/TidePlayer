@@ -30,7 +30,7 @@ local COLOR_TRACK_BG = { 255, 24, 30, 22 }
 local COLOR_TRACK_FILL = { 255, 148, 164, 128 }
 
 -- 面板按 900×540 的设计稿写坐标，这里统一放大，字号也跟着乘
-local UI_SCALE = 1.2
+local UI_SCALE = LAYOUT.scale or 1.2
 
 local function scale_number(value)
 	return math.floor((value or 0) * UI_SCALE + 0.5)

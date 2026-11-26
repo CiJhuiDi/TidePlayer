@@ -11,6 +11,16 @@ local PANEL_WIDTH = 900
 local PANEL_HEIGHT = 540
 local PADDING = 16
 
+-- 设计稿是 900×540，实际按这个倍数放大（widget 那边同步乘）
+local UI_SCALE = 1.2
+
+local SCALED_WIDTH = math.floor(PANEL_WIDTH * UI_SCALE + 0.5)
+local SCALED_HEIGHT = math.floor(PANEL_HEIGHT * UI_SCALE + 0.5)
+
+-- screen 的逻辑尺寸固定 1920×1080，按它居中
+local SCREEN_WIDTH = 1920
+local SCREEN_HEIGHT = 1080
+
 local scenegraph_definition = {
 	screen = UIWorkspaceSettings.screen,
 	panel = {
@@ -18,12 +28,12 @@ local scenegraph_definition = {
 		vertical_alignment = "center",
 		horizontal_alignment = "center",
 		size = {
-			PANEL_WIDTH,
-			PANEL_HEIGHT,
+			SCALED_WIDTH,
+			SCALED_HEIGHT,
 		},
 		position = {
-			0,
-			0,
+			math.floor((SCREEN_WIDTH - SCALED_WIDTH) / 2),
+			math.floor((SCREEN_HEIGHT - SCALED_HEIGHT) / 2),
 			10,
 		},
 	},
@@ -74,6 +84,7 @@ local layout = {
 	panel_width = PANEL_WIDTH,
 	panel_height = PANEL_HEIGHT,
 	padding = PADDING,
+	scale = UI_SCALE,
 
 	header_y = 14,
 	header_h = 30,
