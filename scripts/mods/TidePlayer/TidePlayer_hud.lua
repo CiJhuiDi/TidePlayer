@@ -378,15 +378,9 @@ TidePlayerHud.update = function (self, dt, t, ui_renderer, render_settings, inpu
 	local song = mod.current_song()
 	local status = mod.status()
 	local enabled = mod:get("hud_enabled") ~= false
-	local toast = mod.volume_toast and mod.volume_toast()
 	local playing = status == "playing" or status == "paused"
 
 	local visible = enabled and playlist ~= nil and song ~= nil and playing
-
-	-- 调音量时即使没在播也临时露一下
-	if toast and enabled and playlist ~= nil then
-		visible = true
-	end
 
 	if not visible then
 		set_visible(self, false)
@@ -416,47 +410,42 @@ TidePlayerHud.update = function (self, dt, t, ui_renderer, render_settings, inpu
 	end
 
 	local paused = status == "paused"
+	local song_name = song and song.name or "?"
+
+	if self._title_for ~= song_name then
+		self._title_for = song_name
+		self._title_chars, self._title_widths = build_chars(song_name)
+		self._title_scroll = 0
+		self._title_tick = 0
+
+		local total = 0
+
+		for i = 1, #self._title_widths do
+			total = total + self._title_widths[i]
+		end
+
+		self._title_width = total
+	end
+
 	local title
 
-	if toast then
-		-- 调音量时优先显示当前音量，盖住歌名
-		title = string.format("VOL %d", mod.volume())
-	else
-		local song_name = song and song.name or "?"
+	if self._title_width and self._title_width > TITLE_UNITS then
+		local interval = tonumber(mod:get("hud_scroll_speed")) or SCROLL_INTERVAL
 
-		if self._title_for ~= song_name then
-			self._title_for = song_name
-			self._title_chars, self._title_widths = build_chars(song_name)
-			self._title_scroll = 0
+		if interval <= 0 then
+			interval = SCROLL_INTERVAL
+		end
+
+		self._title_tick = self._title_tick + (dt or 0)
+
+		if self._title_tick >= interval then
 			self._title_tick = 0
-
-			local total = 0
-
-			for i = 1, #self._title_widths do
-				total = total + self._title_widths[i]
-			end
-
-			self._title_width = total
+			self._title_scroll = (self._title_scroll + 1) % (#self._title_chars + SCROLL_GAP)
 		end
 
-		if self._title_width and self._title_width > TITLE_UNITS then
-			local interval = tonumber(mod:get("hud_scroll_speed")) or SCROLL_INTERVAL
-
-			if interval <= 0 then
-				interval = SCROLL_INTERVAL
-			end
-
-			self._title_tick = self._title_tick + (dt or 0)
-
-			if self._title_tick >= interval then
-				self._title_tick = 0
-				self._title_scroll = (self._title_scroll + 1) % (#self._title_chars + SCROLL_GAP)
-			end
-
-			title = scroll_text(self._title_chars, self._title_widths, self._title_scroll)
-		else
-			title = song_name
-		end
+		title = scroll_text(self._title_chars, self._title_widths, self._title_scroll)
+	else
+		title = song_name
 	end
 
 	if paused ~= self._last_paused then
