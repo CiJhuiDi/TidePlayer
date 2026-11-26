@@ -5,7 +5,7 @@
   "author": "CJDYZ",
   "localization": {
     "zh-cn": {
-      "name": "暗潮点歌台",
+      "name": "潮人电台",
       "description": "粘贴网易云歌单或专辑链接就能在游戏里点歌。自带 minimp3 + waveOut 音频后端，不需要额外插件。"
     }
   }

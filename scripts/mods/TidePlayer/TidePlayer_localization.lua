@@ -1,7 +1,7 @@
 return {
 	mod_name = {
 		en = "Tide Player",
-		["zh-cn"] = "暗潮点歌台",
+		["zh-cn"] = "潮人电台",
 	},
 	mod_description = {
 		en = "Paste a NetEase Cloud Music playlist link and play it in game. Uses the Windows MCI audio backend, no extra plugin needed.",
@@ -113,7 +113,7 @@ return {
 	-- 面板
 	view_title = {
 		en = "Tide Player",
-		["zh-cn"] = "暗潮点歌台",
+		["zh-cn"] = "潮人电台",
 	},
 	view_hint = {
 		en = "Copy a NetEase playlist link, then click \"Paste playlist link\". Esc closes the panel.",
